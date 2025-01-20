@@ -7,7 +7,7 @@ RUN go build -o ./api
 
 FROM debian:latest
 
-WORKDIR /app
+WORKDIR /bin
 COPY --from=builder /build/api ./api
 
-CMD ["/app/api"]
+CMD ["/bin/api"]
