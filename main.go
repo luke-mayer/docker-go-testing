@@ -2,22 +2,39 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 // var port = os.Getenv("PORT")
-var port = 8080
+var port = 1323
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "hello world\n")
+func helloHandler(c echo.Context) error {
+	return c.String(http.StatusOK, "Hello, World!")
+}
+
+func getUser(c echo.Context) error {
+	id := c.Param("id")
+	return c.String(http.StatusOK, id)
+}
+
+func getQueries(c echo.Context) error {
+	team := c.QueryParam("team")
+	member := c.QueryParam("member")
+	return c.String(http.StatusOK, "team:"+team+", member:"+member)
 }
 
 func main() {
-	http.HandleFunc("/", helloHandler)
-	log.Printf("Server running on port: %v\n", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%v", port), nil)
-	if err != nil {
-		log.Fatalf("Error calling ListenAndServe(): %v", err)
-	}
+	e := echo.New()
+	e.GET("/", helloHandler)
+	e.Use(middleware.Logger())
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{"*"},
+	}))
+	e.GET("/users/:id", getUser)
+	e.GET("/show", getQueries)
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%d", port)))
 }
